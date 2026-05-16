@@ -22,6 +22,7 @@ public class SimpleAuto extends PeriodicOpMode {
     @Override
     public void start() {
         robot.resetEncoders();
+        robot.setPidConstants();
         robot.setSetpoints(MOVMENT_SIZE, 0);
     }
 }
