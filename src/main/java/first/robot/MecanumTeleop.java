@@ -15,7 +15,6 @@ public class MecanumTeleop extends PeriodicOpMode {
   /** The Robot instance is passed into the opmode via the constructor. */
   public MecanumTeleop(Robot robot) {
     this.robot = robot;
-    robot.initTelopDriving();
   }
 
   @Override

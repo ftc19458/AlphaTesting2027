@@ -1,10 +1,20 @@
 package first.robot;
 
+import static org.wpilib.units.Units.Inches;
+
 import org.wpilib.drive.MecanumDrive;
 import org.wpilib.framework.OpModeRobot;
+import org.wpilib.hardware.bus.I2C.Port;
 import org.wpilib.hardware.expansionhub.ExpansionHubMotor;
 import org.wpilib.hardware.imu.OnboardIMU;
-import org.wpilib.smartdashboard.SmartDashboard;
+import org.wpilib.math.controller.PIDController;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.units.measure.Distance;
+
+import first.robot.controllers.AnglePIDController;
+import first.robot.sensors.GoBildaPinpoint;
+import first.robot.sensors.GoBildaPinpoint.EncoderDirection;
 
 public class Robot extends OpModeRobot {
   private final ExpansionHubMotor frontLeft = new ExpansionHubMotor(0, 0);
@@ -12,12 +22,30 @@ public class Robot extends OpModeRobot {
   private final ExpansionHubMotor backRight = new ExpansionHubMotor(0, 2);
   private final ExpansionHubMotor frontRight = new ExpansionHubMotor(0, 3);
 
-  private int frontLeftSetpoint, backLeftSetpoint, frontRightSetpoint, backRightSetpoint;
 
   private static final OnboardIMU.MountOrientation orientation =
       OnboardIMU.MountOrientation.LANDSCAPE;
 
   private static OnboardIMU imu = new OnboardIMU(orientation);
+
+  private final GoBildaPinpoint pinpoint = new GoBildaPinpoint(Port.PORT_1);
+
+
+  private static double Tp = 0;//0.2;
+  private static double Ti = 0;
+  private static double Td = 0.0;//0.005;
+
+  private static double Hp = 0.05;
+  private static double Hi = 0;
+  private static double Hd = 0.003;
+
+  private PIDController xPid = new PIDController(Tp, Ti, Td);
+  private PIDController yPid = new PIDController(Tp, Ti, Td);
+  private PIDController hPid = new AnglePIDController(Hp, Hi, Hd);
+  
+
+  private Pose2d setpoint = Pose2d.kZero;
+
 
 
   public MecanumDrive drive;
@@ -27,7 +55,6 @@ public class Robot extends OpModeRobot {
    * initialization code.
    */
   public Robot() {
-
     frontLeft.setReversed(true);
     backLeft.setReversed(true);
 
@@ -38,6 +65,18 @@ public class Robot extends OpModeRobot {
     frontRight.setFloatOn0(false);
 
     imu.resetYaw();
+
+             drive = new MecanumDrive(
+        frontLeft::setThrottle,
+        backLeft::setThrottle,
+        frontRight::setThrottle,
+        backRight::setThrottle
+      );
+
+        pinpoint.setEncoderDirections(EncoderDirection.FORWARD, EncoderDirection.FORWARD);
+        pinpoint.setEncoderResolution(19.8943678865);
+        pinpoint.setOffsetsMM(-139.7,-25.4);
+        pinpoint.resetPosAndIMU();
   }
 
   public void setDrivePowers(double x, double y, double rotation) {
@@ -46,66 +85,49 @@ public class Robot extends OpModeRobot {
   }
 
   public void setDrivePowersFieldCentric(double x, double y, double rotation){
-    drive.driveCartesian(x, y, rotation, imu.getRotation2d());
+    drive.driveCartesian(x, y, rotation, getCurPose2d().getRotation());
   }
 
-  //temporary using the drive encodrs until I setup odo
-  public void setSetpoints(int x, int y){
-    frontLeftSetpoint = x + y;
-    backLeftSetpoint = x - y;
-    frontRightSetpoint = x - y;
-    backRightSetpoint = x + y;
+  
+  public void setSetpoint(double x, double y, double h){
 
+    Distance xDist =  Distance.ofRelativeUnits(x, Inches);
+    Distance yDist =  Distance.ofRelativeUnits(y, Inches);
+    Rotation2d rot = Rotation2d.fromDegrees(h);
 
-    frontLeft.setPositionSetpoint(frontLeftSetpoint);
-    backLeft.setPositionSetpoint(backLeftSetpoint);
-    frontRight.setPositionSetpoint(frontRightSetpoint);
-    backRight.setPositionSetpoint(backRightSetpoint);
-    
-
+    setSetpoint(new Pose2d(xDist,yDist,rot)); 
   }
 
-  public void setPidConstants() {
-       frontLeft.getPositionConstants().setPID(0.3, 0,0);
-      backLeft.getPositionConstants().setPID(0.3, 0, 0);
-      frontRight.getPositionConstants().setPID(0.3, 0, 0);
-      backRight.getPositionConstants().setPID(0.3, 0, 0);
+  public void setSetpoint(Pose2d pose){
+    setpoint = pose;
+    xPid.setSetpoint(pose.getMeasureX().in(Inches));
+    yPid.setSetpoint(pose.getMeasureY().in(Inches));
+    hPid.setSetpoint(pose.getRotation().getDegrees());
   }
 
-  public boolean isDoneMoving(int tolerance) {
-
-    return Math.abs(frontLeft.getEncoderPosition() - frontLeftSetpoint) <= tolerance &&
-           Math.abs(backLeft.getEncoderPosition() - backLeftSetpoint) <= tolerance &&
-           Math.abs(frontRight.getEncoderPosition() - frontRightSetpoint) <= tolerance &&
-           Math.abs(backRight.getEncoderPosition()- backRightSetpoint) <= tolerance;
+  public Pose2d getSetpoint(){
+    return setpoint;
   }
 
-  public void  updateDash(){
-    double flPos = frontLeft.getEncoderPosition();
-    double blPos = backLeft.getEncoderPosition();
-    double frPos = frontRight.getEncoderPosition();
-    double brPos = backRight.getEncoderPosition();
+  public void updatePowers(){
+    Pose2d pos = pinpoint.getPose();
+    double xPower = -xPid.calculate(pos.getMeasureX().in(Inches));
+    double yPower = yPid.calculate(pos.getMeasureY().in(Inches));
+    double hPower = -hPid.calculate(pos.getRotation().getDegrees());
 
-
-    SmartDashboard.putNumber("front left", flPos);
-    SmartDashboard.putNumber("back left", blPos);
-    SmartDashboard.putNumber("front right", frPos);
-    SmartDashboard.putNumber("back right", brPos);
+    setDrivePowersFieldCentric(xPower,yPower, hPower);
+  }
+  
+  public Pose2d getCurPose2d(){
+    return pinpoint.getPose();
   }
 
-  public void initTelopDriving(){
-         drive = new MecanumDrive(
-        frontLeft::setThrottle,
-        backLeft::setThrottle,
-        frontRight::setThrottle,
-        backRight::setThrottle
-      );
+  public void updatePinpont(){
+    pinpoint.update();
   }
 
-  public void resetEncoders() {
-    frontLeft.resetEncoder();
-    backLeft.resetEncoder();
-    backRight.resetEncoder();
-    frontRight.resetEncoder();
+  public void resetPinpoint()
+  {
+    pinpoint.resetPosAndIMU();
   }
 }

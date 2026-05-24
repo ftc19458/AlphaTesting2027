@@ -1,12 +1,15 @@
 package first.robot.sensors;
 
 
+import static org.wpilib.units.Units.Meters;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import org.wpilib.hardware.bus.I2C;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.units.measure.Distance;
 
 public class GoBildaPinpoint {
     
@@ -207,5 +210,13 @@ public class GoBildaPinpoint {
 
     public int getDeviceStatus() {
         return deviceStatus;
+    }
+
+    public Pose2d getPose() {
+        Distance xDist = Distance.ofRelativeUnits(getXMeters(), Meters);
+        Distance yDist = Distance.ofRelativeUnits(getYMeters(), Meters);
+        Rotation2d rot = Rotation2d.fromRadians(getHeadingRadians());
+        return new Pose2d(xDist,yDist,rot);
+
     }
 }
