@@ -20,7 +20,6 @@ public class SquareAuto extends PeriodicOpMode{
 
     }
 
-
     public SquareAuto(Robot robot) {
         this.robot = robot;
         robot.initTelopDriving();
