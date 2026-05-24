@@ -15,10 +15,12 @@ public class MecanumTeleop extends PeriodicOpMode {
   /** The Robot instance is passed into the opmode via the constructor. */
   public MecanumTeleop(Robot robot) {
     this.robot = robot;
+    robot.initTelopDriving();
   }
 
   @Override
   public void periodic() {
+
     robot.setDrivePowers(
       -MathUtil.applyDeadband(gamepad.getLeftY(), DEADBAND) * MAX_SPEED,
       MathUtil.applyDeadband(gamepad.getLeftX(), DEADBAND) * MAX_SPEED,
@@ -27,6 +29,5 @@ public class MecanumTeleop extends PeriodicOpMode {
   }
   @Override
   public void start() {
-    robot.initTelopDriving();
   }
 }

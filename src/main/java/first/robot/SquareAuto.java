@@ -8,7 +8,8 @@ public class SquareAuto extends PeriodicOpMode{
     private final Robot robot;
     private final int SQUARE_SIZE = 200; // ticks
     private final int TOLERANCE = 10; //ticks
-    private State state;
+    private State state = State.FORWARD;
+    boolean hasRun = false;
 
     enum State{
         FORWARD,
@@ -22,6 +23,8 @@ public class SquareAuto extends PeriodicOpMode{
 
     public SquareAuto(Robot robot) {
         this.robot = robot;
+        robot.initTelopDriving();
+        state = State.FORWARD;
     }
 
     @Override
@@ -58,10 +61,15 @@ public class SquareAuto extends PeriodicOpMode{
     }
 
     @Override
+    public void end() {
+        //i only have this because for some reaosn periodic seems to run beofore start so i need to reset the state to forward. 
+        state = State.FORWARD;
+    }
+
+    @Override
     public void start() {
         state = State.FORWARD;
         robot.resetEncoders();
         robot.setPidConstants();
     }
-
 }

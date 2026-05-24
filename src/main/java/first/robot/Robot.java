@@ -74,11 +74,10 @@ public class Robot extends OpModeRobot {
 
   public boolean isDoneMoving(int tolerance) {
 
-
-    return Math.abs(Math.abs(frontLeft.getEncoderPosition()) - frontLeftSetpoint) <= tolerance &&
-           Math.abs(Math.abs(backLeft.getEncoderPosition()) - backLeftSetpoint) <= tolerance &&
-           Math.abs(Math.abs(frontRight.getEncoderPosition()) - frontRightSetpoint) <= tolerance &&
-           Math.abs(Math.abs(backRight.getEncoderPosition()) - backRightSetpoint) <= tolerance;
+    return Math.abs(frontLeft.getEncoderPosition() - frontLeftSetpoint) <= tolerance &&
+           Math.abs(backLeft.getEncoderPosition() - backLeftSetpoint) <= tolerance &&
+           Math.abs(frontRight.getEncoderPosition() - frontRightSetpoint) <= tolerance &&
+           Math.abs(backRight.getEncoderPosition()- backRightSetpoint) <= tolerance;
   }
 
   public void  updateDash(){
