@@ -10,6 +10,7 @@ import org.wpilib.hardware.imu.OnboardIMU;
 import org.wpilib.math.controller.PIDController;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.smartdashboard.SmartDashboard;
 import org.wpilib.units.measure.Distance;
 
 import com.revrobotics.spark.A301;
@@ -78,6 +79,14 @@ public class Robot extends OpModeRobot {
   }
 
   public void setDrivePowers(double x, double y, double rotation) {
+    SmartDashboard.putNumber("left front current ", frontLeft.getOutputCurrent().get());
+    SmartDashboard.putNumber("left back current ", backLeft.getOutputCurrent().get());
+    SmartDashboard.putNumber("right front current ", frontRight.getOutputCurrent().get());
+    SmartDashboard.putNumber("right back current ", backRight.getOutputCurrent().get());
+    SmartDashboard.putNumber("Total current ", frontLeft.getOutputCurrent().get() + backLeft.getOutputCurrent().get() + frontRight.getOutputCurrent().get() + backRight.getOutputCurrent().get());
+
+
+
     drive.driveCartesian(x, y, rotation);
     
   }
