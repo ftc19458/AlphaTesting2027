@@ -5,26 +5,28 @@ import static org.wpilib.units.Units.Inches;
 import org.wpilib.drive.MecanumDrive;
 import org.wpilib.framework.OpModeRobot;
 import org.wpilib.hardware.bus.I2C.Port;
-import org.wpilib.hardware.expansionhub.ExpansionHubMotor;
+import org.wpilib.hardware.hal.CANBusMap;
 import org.wpilib.hardware.imu.OnboardIMU;
 import org.wpilib.math.controller.PIDController;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.units.measure.Distance;
 
+import com.revrobotics.spark.A301;
+
 import first.robot.controllers.AnglePIDController;
 import first.robot.sensors.GoBildaPinpoint;
 import first.robot.sensors.GoBildaPinpoint.EncoderDirection;
 
 public class Robot extends OpModeRobot {
-  private final ExpansionHubMotor frontLeft = new ExpansionHubMotor(0, 0);
-  private final ExpansionHubMotor backLeft = new ExpansionHubMotor(0, 1);
-  private final ExpansionHubMotor backRight = new ExpansionHubMotor(0, 2);
-  private final ExpansionHubMotor frontRight = new ExpansionHubMotor(0, 3);
+  private final A301 frontLeft = new A301(CANBusMap.CAN_D7);
+  private final A301 backLeft = new A301(CANBusMap.CAN_D3);
+  private final A301 backRight = new A301(CANBusMap.CAN_D0);
+  private final A301 frontRight = new A301(CANBusMap.CAN_D1);
 
 
   private static final OnboardIMU.MountOrientation orientation =
-      OnboardIMU.MountOrientation.LANDSCAPE;
+      OnboardIMU.MountOrientation.LANDSCAPE;  
 
   private static OnboardIMU imu = new OnboardIMU(orientation);
 
@@ -55,14 +57,10 @@ public class Robot extends OpModeRobot {
    * initialization code.
    */
   public Robot() {
-    frontLeft.setReversed(true);
-    backLeft.setReversed(true);
+    frontLeft.setInverted(true);
+    backLeft.setInverted(true);
 
     // tried setting these to both true and false, the drivetrain drifted either way
-    frontLeft.setFloatOn0(false);
-    backLeft.setFloatOn0(false);
-    backRight.setFloatOn0(false);
-    frontRight.setFloatOn0(false);
 
     imu.resetYaw();
 
@@ -85,7 +83,7 @@ public class Robot extends OpModeRobot {
   }
 
   public void setDrivePowersFieldCentric(double x, double y, double rotation){
-    drive.driveCartesian(x, y, rotation, getCurPose2d().getRotation());
+    drive.driveCartesian(x, y, rotation, imu.getRotation2d());
   }
 
   

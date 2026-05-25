@@ -21,8 +21,8 @@ public class MecanumTeleop extends PeriodicOpMode {
   public void periodic() {
 
     robot.setDrivePowers(
-      -MathUtil.applyDeadband(gamepad.getLeftY(), DEADBAND) * MAX_SPEED,
-      MathUtil.applyDeadband(gamepad.getLeftX(), DEADBAND) * MAX_SPEED,
+      MathUtil.applyDeadband(gamepad.getLeftY(), DEADBAND) * MAX_SPEED,
+      -MathUtil.applyDeadband(gamepad.getLeftX(), DEADBAND) * MAX_SPEED,
       MathUtil.applyDeadband(gamepad.getRightX(), DEADBAND) * MAX_SPEED
     );
   }
