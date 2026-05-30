@@ -2,6 +2,8 @@ package first.robot;
 
 import static org.wpilib.units.Units.Inches;
 
+import java.util.function.DoubleConsumer;
+
 import org.wpilib.drive.MecanumDrive;
 import org.wpilib.framework.OpModeRobot;
 import org.wpilib.hardware.bus.I2C.Port;
@@ -53,23 +55,33 @@ public class Robot extends OpModeRobot {
 
   public MecanumDrive drive;
 
+  public DoubleConsumer velSetter(A301 motor, double maxVel, boolean inverted){
+    return (vel) -> {
+      double setVel = vel * maxVel;
+      if(inverted){
+        setVel = -setVel;
+      }
+      motor.setVoltage(maxVel);
+    };
+  }
+
+
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   public Robot() {
-    frontLeft.setInverted(true);
-    backLeft.setInverted(true);
 
-    // tried setting these to both true and false, the drivetrain drifted either way
 
     imu.resetYaw();
 
+
              drive = new MecanumDrive(
-        frontLeft::setThrottle,
-        backLeft::setThrottle,
-        frontRight::setThrottle,
-        backRight::setThrottle
+      velSetter(frontLeft, 12, false),
+      velSetter(backLeft, 12, false),
+      velSetter(frontRight, 12, false),
+      velSetter(backRight, 12, false)
       );
 
         pinpoint.setEncoderDirections(EncoderDirection.FORWARD, EncoderDirection.FORWARD);
@@ -84,6 +96,11 @@ public class Robot extends OpModeRobot {
     SmartDashboard.putNumber("right front current ", frontRight.getOutputCurrent().get());
     SmartDashboard.putNumber("right back current ", backRight.getOutputCurrent().get());
     SmartDashboard.putNumber("Total current ", frontLeft.getOutputCurrent().get() + backLeft.getOutputCurrent().get() + frontRight.getOutputCurrent().get() + backRight.getOutputCurrent().get());
+
+    SmartDashboard.putNumber("left front vel", frontLeft.getEncoderVelocity().get());
+    SmartDashboard.putNumber("left back vel", backLeft.getEncoderVelocity().get());
+    SmartDashboard.putNumber("right front vel", frontRight.getEncoderVelocity().get());
+    SmartDashboard.putNumber("right back vel", backRight.getEncoderVelocity().get());
 
 
 

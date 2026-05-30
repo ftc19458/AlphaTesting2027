@@ -6,14 +6,12 @@ import org.wpilib.opmode.PeriodicOpMode;
 import org.wpilib.opmode.Teleop;
 
 @Teleop
-public class MecanumTeleop extends PeriodicOpMode {
+public class FullPowerTest extends PeriodicOpMode {
   private final Robot robot;
-  private final Gamepad gamepad = new Gamepad(0);
-  private final float MAX_SPEED = 1f;
-  private final float DEADBAND = 0.2f;
+  private final float DEADBAND = 0.1f;
 
   /** The Robot instance is passed into the opmode via the constructor. */
-  public MecanumTeleop(Robot robot) {
+  public FullPowerTest(Robot robot) {
     this.robot = robot;
   }
 
@@ -21,9 +19,9 @@ public class MecanumTeleop extends PeriodicOpMode {
   public void periodic() {
 
     robot.setDrivePowers(
-      MathUtil.applyDeadband(gamepad.getLeftY(), DEADBAND) * MAX_SPEED,
-      -MathUtil.applyDeadband(gamepad.getLeftX(), DEADBAND) * MAX_SPEED,
-      MathUtil.applyDeadband(gamepad.getRightX(), DEADBAND) * MAX_SPEED
+      1,
+      0,
+      0
     );
   }
   @Override
