@@ -12,7 +12,7 @@ public class A301Test extends PeriodicOpMode {
 
     private final OpModeRobot robot;
 
-    private A301 motor = new A301(CANBusMap.CAN_D19);
+    private A301 motor = new A301(CANBusMap.CAN_D0);
     // private A301 motor1 = new A301(CANBusMap.CAN_D5);
 
 
@@ -22,7 +22,7 @@ public class A301Test extends PeriodicOpMode {
 
     @Override
     public void periodic() {
-        motor.setThrottle(1);
+        motor.setVoltage(0);
         // motor1.setThrottle(1);
     }
 

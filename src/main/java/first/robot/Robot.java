@@ -61,7 +61,7 @@ public class Robot extends OpModeRobot {
       if(inverted){
         setVel = -setVel;
       }
-      motor.setVoltage(maxVel);
+      motor.setVoltage(setVel);
     };
   }
 
